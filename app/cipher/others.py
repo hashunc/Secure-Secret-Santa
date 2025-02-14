@@ -1,7 +1,6 @@
 from elGamal import ElGamal as eg
 from Cryptodome.Random import random
-from client import send
-from server import receive
+from client import send, receive
 import socket
 
 groupSize = 3
