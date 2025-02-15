@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
+from fastapi.templating import Jinja2Templates
 from typing import Annotated, Path, Body
 from pydantic import BaseModel, Field
 
@@ -17,5 +18,85 @@ This full-stack application allows users to participate in a secure Secret Santa
     openapi_tags=[
         {"name": "Server", "description": "Server's API Endpoints"},
         {"name": "Client", "description": "Client's API Endpoints"},
+        {"name": "Home", "description": "Starting API Endpoints"}
     ],
 )
+# function to get a Jinja template
+template = Jinja2Templates(directory="templates").TemplateResponse
+
+# Open home page where user can join or create a group
+@app.get(
+        "/",
+        summary="Home page",
+        description="Join or create a group",
+        responses={200: {"description": "Joined group successfully"},
+                   201: {"description": "Created group successfully"},
+                   404: {"description": "Invalid group or password"},
+                   400: {"description": "Invalid group creation syntax"}},
+        tags=["Home"],
+        )
+def get_index():
+    return template("index.html")
+
+# Post a sign in attempt
+@app.post(
+        '/sign_in', 
+        summary="Sign in",
+        description="Enter group name and password to join",
+        responses={
+            200: {"description": "Joined group successfully"},
+            404: {"description": "Invalid group or password"},
+        },
+        tags=["Client"],
+        )
+def sign_in(username: Annotated[str, Form()],
+            password: Annotated[str, Form()],):
+    groupName,groupPassword = (username,password)
+
+    # TODO: check if group exists in database
+
+    return template("santa.html")
+# Flask routes to import to FastAPI
+'''
+
+@app.route("/santa.html")
+def santa():
+    return render_template("santa.html")
+
+
+
+
+@app.route('/create_group', methods=['POST'])
+def create_group():
+    new_group_name = request.form["newGroupName"]
+    new_password = request.form["newPassword"]
+
+    #TODO: create new group in database
+
+    return render_template("santa.html")
+
+@app.route('/input_data', methods=['POST'])
+def input_data():
+    first_name = request.form["firstName"]
+    last_name = request.form["lastName"]
+    price_limit = request.form["priceLimit"]
+
+    prefered_person_first_name = request.form["preferedPersonFirstName"]
+    prefered_person_last_name = request.form["preferedPersonLastName"]
+
+    least_prefered_person_first_name = request.form["leastPreferedPersonFirstName"]
+    least_prefered_person_last_name = request.form["leastPreferedPersonLastName"]
+
+    #TODO: crypto stuff
+
+    return render_template("santa.html")
+
+
+@app.route('/back', methods=['GET'])
+def back():
+    return render_template("index.html")
+
+
+
+
+'''
