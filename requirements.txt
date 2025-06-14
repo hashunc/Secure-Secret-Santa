@@ -2,5 +2,5 @@ fastapi
 Jinja2
 python-multipart
 #flask
-Cryptodome
+pycryptodomex
 pytest

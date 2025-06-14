@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Request, Form, Path, Body
 from fastapi.templating import Jinja2Templates
-from typing import Annotated, Path, Body
+from typing import Annotated
 from pydantic import BaseModel, Field
 
 app = FastAPI(
@@ -18,46 +18,55 @@ This full-stack application allows users to participate in a secure Secret Santa
     openapi_tags=[
         {"name": "Server", "description": "Server's API Endpoints"},
         {"name": "Client", "description": "Client's API Endpoints"},
-        {"name": "Home", "description": "Starting API Endpoints"}
+        {"name": "Home", "description": "Starting API Endpoints"},
     ],
 )
 # function to get a Jinja template
-template = Jinja2Templates(directory="templates").TemplateResponse
+templates = Jinja2Templates(directory="app/templates")
+
 
 # Open home page where user can join or create a group
 @app.get(
-        "/",
-        summary="Home page",
-        description="Join or create a group",
-        responses={200: {"description": "Joined group successfully"},
-                   201: {"description": "Created group successfully"},
-                   404: {"description": "Invalid group or password"},
-                   400: {"description": "Invalid group creation syntax"}},
-        tags=["Home"],
-        )
-def get_index():
-    return template("index.html")
+    "/",
+    summary="Home page",
+    description="Join or create a group",
+    responses={
+        200: {"description": "Joined group successfully"},
+        201: {"description": "Created group successfully"},
+        404: {"description": "Invalid group or password"},
+        400: {"description": "Invalid group creation syntax"},
+    },
+    tags=["Home"],
+)
+def get_index(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html", context={})
+
 
 # Post a sign in attempt
 @app.post(
-        '/sign_in', 
-        summary="Sign in",
-        description="Enter group name and password to join",
-        responses={
-            200: {"description": "Joined group successfully"},
-            404: {"description": "Invalid group or password"},
-        },
-        tags=["Client"],
-        )
-def sign_in(username: Annotated[str, Form()],
-            password: Annotated[str, Form()],):
-    groupName,groupPassword = (username,password)
+    "/sign_in",
+    summary="Sign in",
+    description="Enter group name and password to join",
+    responses={
+        200: {"description": "Joined group successfully"},
+        404: {"description": "Invalid group or password"},
+    },
+    tags=["Client"],
+)
+def sign_in(
+    request: Request,
+    username: Annotated[str, Form()],
+    password: Annotated[str, Form()],
+):
+    groupName, groupPassword = (username, password)
 
     # TODO: check if group exists in database
 
-    return template("santa.html")
+    return templates.TemplateResponse(request=request, name="santa.html", context={})
+
+
 # Flask routes to import to FastAPI
-'''
+"""
 
 @app.route("/santa.html")
 def santa():
@@ -99,4 +108,4 @@ def back():
 
 
 
-'''
+"""
